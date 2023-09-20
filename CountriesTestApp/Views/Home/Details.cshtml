@@ -1,0 +1,26 @@
+﻿@model CountryDetailsModel
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+<a asp-action="Index">Back to Countries</a>
+<dl>
+    <dt>@Html.DisplayNameFor(model => model.Name)</dt>
+    <dd>@Html.DisplayFor(model => model.Name)</dd>
+
+    <dt>@Html.DisplayNameFor(model => model.Region)</dt>
+    <dd>@Html.DisplayFor(model => model.Region)</dd>
+
+    <dt>@Html.DisplayNameFor(model => model.Capital)</dt>
+    <dd>@Html.DisplayFor(model => model.Capital)</dd>
+
+</dl>
+
+<dt>@Html.DisplayNameFor(model => model.Languages)</dt>
+<ul>
+    @foreach (var language in Model.Languages)
+    {
+        <li>@Html.DisplayFor(countryModel => language.Value)</li>
+    }
+</ul>
