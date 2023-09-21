@@ -18,7 +18,7 @@
 ```sh
       dotnet build .\CountriesTestApp.
 ```
-* Чтобы запустить приложение и проверить последовательность скобок:
+* Чтобы запустить приложение, выполните следующее:
 ```sh
       cd .\CountriesTestApp\bin\Debug\net6.0
       CountriesTestApp.exe
