@@ -1,96 +1,47 @@
 ﻿using CountriesTestApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using CountriesTestApp.Countries;
 
 namespace CountriesTestApp.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly CountryService _countryService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, CountryService countryService)
         {
             _logger = logger;
+            _countryService = countryService;
         }
 
-        public IActionResult Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
             ViewData["NameSort"] = string.IsNullOrEmpty(sortOrder) ? "nameDesc" : "";
             ViewData["CapitalSort"] = sortOrder == "capital" ? "capitalDesc" : "capital";
             ViewData["CurrentSearch"] = searchString;
 
-            var countries = new List<CountryModel>
-            {
-                new CountryModel
-                {
-                    Name = "Russia",
-                    Capital = "Moscow"
-                },
-                new CountryModel
-                {
-                    Name = "Norway",
-                    Capital = "Oslo"
-                },
-                new CountryModel
-                {
-                    Name = "South Korea",
-                    Capital = "Seoul"
-                }
-            };
+            CountryModel[] countries;
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                countries = countries.Where(s => s.Name.ToLower().Contains(searchString.ToLower())).ToList();
+                countries = await _countryService.SearchCountriesByName(searchString);
+            }
+            else
+            {
+                countries = await _countryService.GetAll();
             }
 
-            countries = sortOrder switch
-            {
-                "nameDesc" => countries.OrderByDescending(с => с.Name).ToList(),
-                "capitalDesc" => countries.OrderByDescending(с => с.Capital).ToList(),
-                "capital" => countries.OrderBy(с => с.Capital).ToList(),
-                _ => countries.OrderBy(с => с.Name).ToList()
-            };
+            countries = SortCountries(countries, sortOrder);
+
             return View(countries);
         }
 
-        public IActionResult Details(string countryName)
+        public async Task<IActionResult> Details(string countryName)
         {
-            var countries = new List<CountryDetailsModel>
-            {
-                new CountryDetailsModel
-                {
-                    Name = "Russia",
-                    Region = "Eurasia",
-                    Capital = "Moscow",
-                    Languages = new Dictionary<string, string>
-                    {
-                        {"rus", "Russian"},
-                        {"eng", "English"}
-                    }
-                },
-                new CountryDetailsModel
-                {
-                    Name = "Norway",
-                    Region = "Europe",
-                    Capital = "Oslo",
-                    Languages = new Dictionary<string, string>
-                    {
-                        {"spa", "Spanish"},
-                        {"eng", "English"}
-                    }
-                },
-                new CountryDetailsModel
-                {
-                    Name = "South Korea",
-                    Region = "Asia",
-                    Capital = "Seoul",
-                    Languages = new Dictionary<string, string>
-                    {
-                        {"kor", "Korean"}
-                    }
-                }
-            };
-            var country = countries.FirstOrDefault(c => c.Name == countryName);
+            var country = await _countryService.GetCountryByName(countryName);
+
             return View(country);
         }
 
@@ -98,6 +49,17 @@ namespace CountriesTestApp.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        private static CountryModel[] SortCountries(CountryModel[] countries, string sortOrder)
+        {
+            return sortOrder switch
+            {
+                "nameDesc" => countries.OrderByDescending(с => с.Name).ToArray(),
+                "capitalDesc" => countries.OrderByDescending(с => с.Capital).ToArray(),
+                "capital" => countries.OrderBy(с => с.Capital).ToArray(),
+                _ => countries.OrderBy(с => с.Name).ToArray()
+            };
         }
     }
 }

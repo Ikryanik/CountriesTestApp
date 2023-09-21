@@ -1,4 +1,13 @@
+using CountriesTestApp.Common;
+using CountriesTestApp.Countries;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var appConfig = new AppConfig(args);
+builder.Services.AddSingleton(appConfig);
+builder.Services.AddScoped<CountryService>();
+builder.Services.AddScoped<CountryRepository>();
+builder.Services.AddHttpClient<CountryRepository>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
